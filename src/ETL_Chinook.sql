@@ -128,3 +128,51 @@ CREATE TABLE IF NOT EXISTS staging_fact_invoiceline (
     FOREIGN KEY (InvoiceId) REFERENCES staging_fact_invoice(InvoiceId),
     FOREIGN KEY (TrackId) REFERENCES staging_dim_track(TrackId)
 );
+
+// Load data into staging tables
+
+CREATE OR REPLACE STAGE FALCON_CHINOOK_DATA;
+
+COPY INTO staging_dim_artist
+FROM @FALCON_CHINOOK_DATA/chinook_table_artist.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_customer
+FROM @FALCON_CHINOOK_DATA/chinook_table_customer.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_album
+FROM @FALCON_CHINOOK_DATA/chinook_table_album.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_track
+FROM @FALCON_CHINOOK_DATA/chinook_table_track.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_employee
+FROM @FALCON_CHINOOK_DATA/chinook_table_employee.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1 NULL_IF = ('NULL', ''));
+
+COPY INTO staging_dim_playlist
+FROM @FALCON_CHINOOK_DATA/chinook_table_playlist.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_playlisttrack
+FROM @FALCON_CHINOOK_DATA/chinook_table_playlisttrack.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_genre
+FROM @FALCON_CHINOOK_DATA/chinook_table_genre.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_dim_mediatype
+FROM @FALCON_CHINOOK_DATA/chinook_table_mediatype.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_fact_invoice
+FROM @FALCON_CHINOOK_DATA/chinook_table_invoice.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+COPY INTO staging_fact_invoiceline
+FROM @FALCON_CHINOOK_DATA/chinook_table_invoiceline.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
