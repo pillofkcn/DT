@@ -176,3 +176,131 @@ FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
 COPY INTO staging_fact_invoiceline
 FROM @FALCON_CHINOOK_DATA/chinook_table_invoiceline.csv
 FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+
+/*SELECT 'staging_dim_artist' AS table_name, COUNT(*) AS row_count FROM staging_dim_artist
+UNION ALL
+SELECT 'staging_dim_customer', COUNT(*) FROM staging_dim_customer
+UNION ALL
+SELECT 'staging_dim_album', COUNT(*) FROM staging_dim_album
+UNION ALL
+SELECT 'staging_dim_track', COUNT(*) FROM staging_dim_track
+UNION ALL
+SELECT 'staging_dim_employee', COUNT(*) FROM staging_dim_employee
+UNION ALL
+SELECT 'staging_dim_playlist', COUNT(*) FROM staging_dim_playlist
+UNION ALL
+SELECT 'staging_dim_playlisttrack', COUNT(*) FROM staging_dim_playlisttrack
+UNION ALL
+SELECT 'staging_dim_genre', COUNT(*) FROM staging_dim_genre
+UNION ALL
+SELECT 'staging_dim_mediatype', COUNT(*) FROM staging_dim_mediatype
+UNION ALL
+SELECT 'staging_fact_invoice', COUNT(*) FROM staging_fact_invoice
+UNION ALL
+SELECT 'staging_fact_invoiceline', COUNT(*) FROM staging_fact_invoiceline;*/
+
+// Create final dim and fact tables
+
+// Customer Dimension
+CREATE OR REPLACE TABLE dim_customer AS
+SELECT 
+    CustomerId AS customer_id,
+    FirstName AS first_name,
+    LastName AS last_name,
+    Company AS company,
+    Address AS address,
+    City AS city,
+    State AS state,
+    Country AS country,
+    PostalCode AS postal_code,
+    Phone AS phone,
+    Fax AS fax,
+    Email AS email
+FROM staging_dim_customer;
+
+// Track Dimension
+CREATE OR REPLACE TABLE dim_track AS
+SELECT 
+    t.TrackId AS track_id,
+    t.Name AS name,
+    a.Title AS album_title,
+    ar.Name AS artist_name,
+    m.Name AS media_type,
+    g.Name AS genre,
+    t.Composer AS composer,
+    t.Milliseconds AS milliseconds,
+    t.Bytes AS bytes,
+    t.UnitPrice AS unit_price
+FROM staging_dim_track t
+LEFT JOIN staging_dim_album a ON t.AlbumId = a.AlbumId
+LEFT JOIN staging_dim_artist ar ON a.ArtistId = ar.ArtistId
+LEFT JOIN staging_dim_mediatype m ON t.MediaTypeId = m.MediaTypeId
+LEFT JOIN staging_dim_genre g ON t.GenreId = g.GenreId;
+
+// Employee Dimension
+CREATE OR REPLACE TABLE dim_employee AS
+SELECT 
+    e.EmployeeId AS employee_id,
+    CONCAT(e.FirstName, ' ', e.LastName) AS full_name,
+    e.Title AS title,
+    CONCAT(s.FirstName, ' ', s.LastName) AS supervisor_name,
+    e.HireDate AS hire_date,
+    e.Address AS address,
+    e.City AS city,
+    e.State AS state,
+    e.Country AS country,
+    e.PostalCode AS postal_code,
+    e.Email AS email
+FROM staging_dim_employee e
+LEFT JOIN staging_dim_employee s ON e.ReportsTo = s.EmployeeId;
+
+// Playlist Dimension
+CREATE OR REPLACE TABLE dim_playlist AS
+SELECT 
+    PlaylistId AS playlist_id,
+    Name AS name
+FROM staging_dim_playlist;
+
+// Date Dimension
+CREATE OR REPLACE TABLE dim_date AS
+SELECT DISTINCT 
+    CAST(InvoiceDate AS DATE) AS date,
+    EXTRACT(DAY FROM InvoiceDate) AS day,
+    EXTRACT(MONTH FROM InvoiceDate) AS month,
+    EXTRACT(YEAR FROM InvoiceDate) AS year,
+    EXTRACT(QUARTER FROM InvoiceDate) AS quarter
+FROM staging_fact_invoice;
+
+// Fact Table
+CREATE OR REPLACE TABLE fact_invoice AS
+SELECT 
+    i.InvoiceId AS fact_id,
+    i.CustomerId AS customer_id,
+    e.employee_id AS employee_id,
+    d.date AS date_id,
+    il.TrackId AS track_id,
+    pt.PlaylistId AS playlist_id,
+    il.UnitPrice AS unit_price,
+    il.Quantity AS quantity,
+    i.Total AS total
+FROM staging_fact_invoice i
+LEFT JOIN staging_fact_invoiceline il ON i.InvoiceId = il.InvoiceId
+LEFT JOIN dim_date d ON CAST(i.InvoiceDate AS DATE) = d.date
+LEFT JOIN dim_employee e ON e.employee_id = i.CustomerId
+LEFT JOIN staging_dim_playlisttrack pt ON il.TrackId = pt.TrackId;
+
+/*SELECT 'dim_customer' AS table_name, COUNT(*) AS row_count FROM dim_customer
+UNION ALL
+SELECT 'dim_track', COUNT(*) AS row_count FROM dim_track
+UNION ALL
+SELECT 'dim_employee', COUNT(*) AS row_count FROM dim_employee
+UNION ALL
+SELECT 'dim_playlist', COUNT(*) AS row_count FROM dim_playlist
+UNION ALL
+SELECT 'dim_date', COUNT(*) AS row_count FROM dim_date
+UNION ALL
+SELECT 'fact_invoice', COUNT(*) AS row_count FROM fact_invoice;
+
+SELECT COUNT(DISTINCT CAST(InvoiceDate AS DATE)) AS unique_dates FROM staging_fact_invoice;
+
+SELECT COUNT(*) AS total_lines FROM staging_fact_invoiceline;*/
