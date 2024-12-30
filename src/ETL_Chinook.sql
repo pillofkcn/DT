@@ -177,6 +177,7 @@ COPY INTO staging_fact_invoiceline
 FROM @FALCON_CHINOOK_DATA/chinook_table_invoiceline.csv
 FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
 
+
 /*SELECT 'staging_dim_artist' AS table_name, COUNT(*) AS row_count FROM staging_dim_artist
 UNION ALL
 SELECT 'staging_dim_customer', COUNT(*) FROM staging_dim_customer
