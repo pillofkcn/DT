@@ -18,6 +18,9 @@ USE SCHEMA FALCON_SCHEME;
 ```
 
 ### Stagingové tabuľky
+
+<img src="https://github.com/user-attachments/assets/14afcc77-eb77-4c45-be9e-86882a0abae3" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+
 Stagingové tabuľky slúžia ako medzivrstva pre surové údaje. Projekt zahŕňa nasledujúce stagingové tabuľky:
 
 1. **staging_dim_genre**: Ukladá žánre skladieb s atribútmi `GenreId` (primárny kľúč) a `Name` (názov žánru).
@@ -33,6 +36,8 @@ Stagingové tabuľky slúžia ako medzivrstva pre surové údaje. Projekt zahŕ�
 11. **staging_fact_invoiceline**: Ukladá riadkové položky faktúr s detailmi ako `InvoiceLineId`, `InvoiceId`, `TrackId`, jednotková cena a množstvo.
 
 ### Dimenzionálne a faktové tabuľky
+
+<img src="https://github.com/user-attachments/assets/0e9b3971-ed3f-41ee-8ec4-6b0d596be930" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 #### Dimenzionálne tabuľky
 
