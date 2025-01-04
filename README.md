@@ -186,3 +186,97 @@ COPY INTO staging_dim_artist
 FROM @FALCON_CHINOOK_DATA/chinook_table_artist.csv
 FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
 ```
+### Vizualizácie
+Projekt zahŕňa vizualizácie vytvorené na základe dimenzionálnych a faktových tabuliek.
+
+1. **Top song by revenue**
+   - **Popis:** Zobrazuje 10 skladieb s najvyššími tržbami na základe predaja.
+   - **Vstupy:** Dimenzionálna tabuľka `dim_track`, faktová tabuľka `fact_invoice`.
+
+```sql
+SELECT 
+    t.name AS track_name,
+    SUM(f.unit_price * f.quantity) AS total_revenue
+FROM fact_invoice f
+JOIN dim_track t ON f.track_id = t.track_id
+GROUP BY t.name
+ORDER BY total_revenue DESC
+LIMIT 10;
+```
+   - **Výstup:** Stĺpcový graf, kde osi reprezentujú skladby a ich celkové tržby.
+   = <img src="https://github.com/user-attachments/assets/e63403c7-f299-4fdb-98d9-35bebac73884" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+
+2. **Transactions count by days of the week**
+   - **Popis:** Počet transakcií podľa jednotlivých dní v týždni.
+   - **Vstupy:** Faktová tabuľka `fact_invoice`, dimenzionálna tabuľka `dim_date`.
+
+```sql
+SELECT 
+    CASE 
+        WHEN d.day = 1 THEN 'Monday'
+        WHEN d.day = 2 THEN 'Tuesday'
+        WHEN d.day = 3 THEN 'Wednesday'
+        WHEN d.day = 4 THEN 'Thursday'
+        WHEN d.day = 5 THEN 'Friday'
+        WHEN d.day = 6 THEN 'Saturday'
+        WHEN d.day = 7 THEN 'Sunday'
+    END AS day_of_week,
+    COUNT(fi.fact_id) AS total_activity
+FROM fact_invoice fi
+JOIN dim_date d ON fi.date_id = d.date
+GROUP BY d.day
+ORDER BY d.day;
+```
+   - **Výstup:** Stĺpcový graf reprezentujúci počet transakcií v jednotlivé dni týždňa.
+   = <img src="https://github.com/user-attachments/assets/4b1879ea-3221-4092-88c5-fb447edce698" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+
+3. **Best employees by revenue generated**
+   - **Popis:** Zobrazuje zamestnancov zoradených podľa tržieb, ktoré generovali.
+   - **Vstupy:** Dimenzionálna tabuľka `dim_employee`, faktová tabuľka `fact_invoice`.
+
+```sql
+SELECT 
+    e.full_name AS employee_name,
+    SUM(f.unit_price * f.quantity) AS total_revenue
+FROM fact_invoice f
+JOIN dim_employee e ON f.employee_id = e.employee_id
+GROUP BY e.full_name
+ORDER BY total_revenue DESC;
+```
+   - **Výstup:** Horizontálny stĺpcový graf ukazujúci zamestnancov a ich príspevok na tržby.
+   = <img src="https://github.com/user-attachments/assets/8f54999e-3031-4b95-b865-3e8f421a54a5" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+
+4. **Artists by generated revenue**
+   - **Popis:** Zobrazuje top 10 interpretov na základe ich tržieb.
+   - **Vstupy:** Dimenzionálna tabuľka `dim_track`, faktová tabuľka `fact_invoice`.
+
+```sql
+SELECT 
+    t.artist_name AS artist,
+    SUM(f.unit_price * f.quantity) AS total_revenue
+FROM fact_invoice f
+JOIN dim_track t ON f.track_id = t.track_id
+GROUP BY t.artist_name
+ORDER BY total_revenue DESC
+LIMIT 10;
+```
+   - **Výstup:** Stĺpcový graf zoradený podľa interpretov a ich tržieb.
+   = <img src="https://github.com/user-attachments/assets/49a8e528-63ab-4c26-9349-f175fba1d652" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+
+5. **Countries by generated revenue**
+   - **Popis:** Zobrazuje top 10 krajín podľa generovaných tržieb.
+   - **Vstupy:** Dimenzionálna tabuľka `dim_customer`, faktová tabuľka `fact_invoice`.
+
+```sql
+SELECT 
+    c.country,
+    COUNT(f.fact_id) AS total_transactions,
+    SUM(f.unit_price * f.quantity) AS total_revenue
+FROM fact_invoice f
+JOIN dim_customer c ON f.customer_id = c.customer_id
+GROUP BY c.country
+ORDER BY total_revenue DESC
+LIMIT 10;
+```
+   - **Výstup:** Horizontálny stĺpcový graf reprezentujúci krajiny a ich podiel na tržbách.
+   = <img src="https://github.com/user-attachments/assets/b59a4097-d1ae-492e-874c-41c6909fe65f" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
