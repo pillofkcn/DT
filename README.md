@@ -21,7 +21,7 @@ USE SCHEMA FALCON_SCHEME;
 
 <img src="https://github.com/user-attachments/assets/14afcc77-eb77-4c45-be9e-86882a0abae3" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
-Stagingové tabuľky slúžia ako medzivrstva pre surové údaje. Projekt zahŕňa nasledujúce stagingové tabuľky:
+Stagingové tabuľky slúžia ako medzivrstva pre surové údaje reprezentované ER diagramom vyššie. Projekt zahŕňa nasledujúce stagingové tabuľky:
 
 1. **staging_dim_genre**: Ukladá žánre skladieb s atribútmi `GenreId` (primárny kľúč) a `Name` (názov žánru).
 2. **staging_dim_mediatype**: Obsahuje typy médií s atribútmi `MediaTypeId` (primárny kľúč) a `Name` (názov typu médií).
@@ -34,6 +34,17 @@ Stagingové tabuľky slúžia ako medzivrstva pre surové údaje. Projekt zahŕ�
 9. **staging_dim_playlisttrack**: Spojovacia tabuľka medzi playlistmi a skladbami.
 10. **staging_fact_invoice**: Obsahuje fakturačné údaje, ako sú ID zákazníka, dátum faktúry, adresa a celková suma.
 11. **staging_fact_invoiceline**: Ukladá riadkové položky faktúr s detailmi ako `InvoiceLineId`, `InvoiceId`, `TrackId`, jednotková cena a množstvo.
+
+
+### Načítanie údajov
+Údaje sa načítavajú do stagingových tabuliek pomocou príkazu `COPY INTO`. Predpokladá sa, že CSV súbory sú nahrané v Snowflake stage `FALCON_CHINOOK_DATA`.
+
+Príklad príkazu:
+```sql
+COPY INTO staging_dim_artist
+FROM @FALCON_CHINOOK_DATA/chinook_table_artist.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
+```
 
 ### Dimenzionálne a faktové tabuľky
 
@@ -177,15 +188,6 @@ LEFT JOIN staging_dim_playlisttrack pt ON il.TrackId = pt.TrackId;
 ```
    - Účel: Táto tabuľka je centrálnou tabuľkou pre analýzu predajov a fakturácie.
 
-### Načítanie údajov
-Údaje sa načítavajú do stagingových tabuliek pomocou príkazu `COPY INTO`. Predpokladá sa, že CSV súbory sú prítomné v Snowflake stage `FALCON_CHINOOK_DATA`.
-
-Príklad príkazu:
-```sql
-COPY INTO staging_dim_artist
-FROM @FALCON_CHINOOK_DATA/chinook_table_artist.csv
-FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
-```
 ### Vizualizácie
 Projekt zahŕňa vizualizácie vytvorené na základe dimenzionálnych a faktových tabuliek.
 
