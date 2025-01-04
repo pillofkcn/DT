@@ -5,7 +5,6 @@ USE DATABASE FALCON_CHINOOK;
 CREATE SCHEMA IF NOT EXISTS FALCON_SCHEME;
 USE SCHEMA FALCON_SCHEME;
 
-
 /*LIST @FALCON_CHINOOK_DATA;
 SHOW TABLES IN SCHEMA FALCON_SCHEME;*/
 
@@ -305,3 +304,15 @@ SELECT 'fact_invoice', COUNT(*) AS row_count FROM fact_invoice;
 SELECT COUNT(DISTINCT CAST(InvoiceDate AS DATE)) AS unique_dates FROM staging_fact_invoice;
 
 SELECT COUNT(*) AS total_lines FROM staging_fact_invoiceline;*/
+
+DROP TABLE IF EXISTS staging_dim_genre;
+DROP TABLE IF EXISTS staging_dim_mediatype;
+DROP TABLE IF EXISTS staging_dim_artist;
+DROP TABLE IF EXISTS staging_dim_album;
+DROP TABLE IF EXISTS staging_dim_track;
+DROP TABLE IF EXISTS staging_dim_customer;
+DROP TABLE IF EXISTS staging_dim_employee;
+DROP TABLE IF EXISTS staging_dim_playlist;
+DROP TABLE IF EXISTS staging_dim_playlisttrack;
+DROP TABLE IF EXISTS staging_fact_invoice;
+DROP TABLE IF EXISTS staging_fact_invoiceline;
