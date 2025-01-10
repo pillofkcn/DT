@@ -1,4 +1,5 @@
-# Falcon Chinook ETL Project
+# Falcon Chinook ETL Projekt
+### Autor: Martin Studený
 
 ## Projektový prehľad
 **Falcon Chinook ETL Project** je dátový sklad a ETL pipeline navrhnutý na extrakciu údajov z databázy Chinook, ich transformáciu do dimenzionálnych modelov a načítanie do dátového skladu. Projekt využíva Snowflake SQL na správu stagingových, dimenzionálnych a faktových tabuliek.
