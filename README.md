@@ -53,6 +53,7 @@ FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1);
 #### Dimenzionálne tabuľky
 
 1. **dim_customer**
+   - SCD: 1
    - Transformácia:
      - Získava údaje zo stagingovej tabuľky `staging_dim_customer`.
      - Premenúva atribúty na čitateľnejšie názvy ako `customer_id`, `first_name` a `last_name`.
@@ -78,6 +79,7 @@ FROM staging_dim_customer;
    - Účel: Táto tabuľka umožňuje identifikovať zákazníkov a ich demografické údaje pre analytické účely.
 
 2. **dim_track**
+   - SCD: 1
    - Transformácia:
      - Spája údaje zo stagingových tabuliek `staging_dim_track`, `staging_dim_album`, `staging_dim_artist`, `staging_dim_mediatype` a `staging_dim_genre`.
      - Obsahuje informácie ako názov skladby, názov albumu, meno interpreta, typ médií a žáner.
@@ -105,6 +107,7 @@ LEFT JOIN staging_dim_genre g ON t.GenreId = g.GenreId;
    - Účel: Zabezpečuje kontext skladieb vrátane ich albumov, interpretov a žánrov.
 
 3. **dim_employee**
+   - SCD: 2
    - Transformácia:
      - Využíva údaje zo stagingovej tabuľky `staging_dim_employee`.
      - Pridáva údaje o nadriadenom zamestnancovi pomocou self-join.
@@ -130,6 +133,7 @@ LEFT JOIN staging_dim_employee s ON e.ReportsTo = s.EmployeeId;
    - Účel: Poskytuje informácie o štruktúre tímu a kontaktné údaje zamestnancov.
 
 4. **dim_playlist**
+   - SCD: 1
    - Transformácia:
      - Kopíruje údaje zo stagingovej tabuľky `staging_dim_playlist`.
      - Odstraňuje duplicitné a nadbytočné informácie.
@@ -144,6 +148,7 @@ FROM staging_dim_playlist;
    - Účel: Umožňuje analyzovať používateľské playlisty.
 
 5. **dim_date**
+   - SCD: 0
    - Transformácia:
      - Vytvára jedinečné dátumy zo `InvoiceDate` v tabuľke `staging_fact_invoice`.
      - Extrahuje časové komponenty ako deň, mesiac, rok a štvrťrok.
