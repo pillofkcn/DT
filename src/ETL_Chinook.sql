@@ -282,12 +282,14 @@ SELECT
     pt.PlaylistId AS playlist_id,
     il.UnitPrice AS unit_price,
     il.Quantity AS quantity,
-    i.Total AS total
+    il.UnitPrice * il.Quantity AS line_total,
+    i.Total AS invoice_total
 FROM staging_fact_invoice i
 LEFT JOIN staging_fact_invoiceline il ON i.InvoiceId = il.InvoiceId
 LEFT JOIN dim_date d ON CAST(i.InvoiceDate AS DATE) = d.date
 LEFT JOIN dim_employee e ON e.employee_id = i.CustomerId
 LEFT JOIN staging_dim_playlisttrack pt ON il.TrackId = pt.TrackId;
+
 
 /*SELECT 'dim_customer' AS table_name, COUNT(*) AS row_count FROM dim_customer
 UNION ALL
@@ -305,6 +307,7 @@ SELECT COUNT(DISTINCT CAST(InvoiceDate AS DATE)) AS unique_dates FROM staging_fa
 
 SELECT COUNT(*) AS total_lines FROM staging_fact_invoiceline;*/
 
+// Clean up staging tables
 DROP TABLE IF EXISTS staging_dim_genre;
 DROP TABLE IF EXISTS staging_dim_mediatype;
 DROP TABLE IF EXISTS staging_dim_artist;
@@ -316,3 +319,11 @@ DROP TABLE IF EXISTS staging_dim_playlist;
 DROP TABLE IF EXISTS staging_dim_playlisttrack;
 DROP TABLE IF EXISTS staging_fact_invoice;
 DROP TABLE IF EXISTS staging_fact_invoiceline;
+
+// dim
+DROP TABLE IF EXISTS dim_customer;
+DROP TABLE IF EXISTS dim_track;
+DROP TABLE IF EXISTS dim_employee;
+DROP TABLE IF EXISTS dim_playlist;
+DROP TABLE IF EXISTS dim_date;
+DROP TABLE IF EXISTS fact_invoice;
