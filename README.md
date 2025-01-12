@@ -85,25 +85,25 @@ FROM staging_dim_customer;
      - Obsahuje informácie ako názov skladby, názov albumu, meno interpreta, typ médií a žáner.
      - Normalizuje ceny a kontextualizuje údaje.
    - SQL kód:
-```sql
-CREATE OR REPLACE TABLE dim_track AS
-SELECT 
-    t.TrackId AS track_id,
-    t.Name AS name,
-    a.Title AS album_title,
-    ar.Name AS artist_name,
-    m.Name AS media_type,
-    g.Name AS genre,
-    t.Composer AS composer,
-    t.Milliseconds AS milliseconds,
-    t.Bytes AS bytes,
-    t.UnitPrice AS unit_price
-FROM staging_dim_track t
-LEFT JOIN staging_dim_album a ON t.AlbumId = a.AlbumId
-LEFT JOIN staging_dim_artist ar ON a.ArtistId = ar.ArtistId
-LEFT JOIN staging_dim_mediatype m ON t.MediaTypeId = m.MediaTypeId
-LEFT JOIN staging_dim_genre g ON t.GenreId = g.GenreId;
-```
+   ```sql
+   CREATE OR REPLACE TABLE dim_track AS
+   SELECT 
+       t.TrackId AS track_id,
+       t.Name AS name,
+       a.Title AS album_title,
+       ar.Name AS artist_name,
+       m.Name AS media_type,
+       g.Name AS genre,
+       t.Composer AS composer,
+       t.Milliseconds AS milliseconds,
+       t.Bytes AS bytes,
+       t.UnitPrice AS unit_price
+   FROM staging_dim_track t
+   LEFT JOIN staging_dim_album a ON t.AlbumId = a.AlbumId
+   LEFT JOIN staging_dim_artist ar ON a.ArtistId = ar.ArtistId
+   LEFT JOIN staging_dim_mediatype m ON t.MediaTypeId = m.MediaTypeId
+   LEFT JOIN staging_dim_genre g ON t.GenreId = g.GenreId;
+   ```
    - Účel: Zabezpečuje kontext skladieb vrátane ich albumov, interpretov a žánrov.
 
 3. **dim_employee**
@@ -113,23 +113,23 @@ LEFT JOIN staging_dim_genre g ON t.GenreId = g.GenreId;
      - Pridáva údaje o nadriadenom zamestnancovi pomocou self-join.
      - Obsahuje kompletné kontaktné údaje zamestnancov.
    - SQL kód:
-```sql
-CREATE OR REPLACE TABLE dim_employee AS
-SELECT 
-    e.EmployeeId AS employee_id,
-    CONCAT(e.FirstName, ' ', e.LastName) AS full_name,
-    e.Title AS title,
-    CONCAT(s.FirstName, ' ', s.LastName) AS supervisor_name,
-    e.HireDate AS hire_date,
-    e.Address AS address,
-    e.City AS city,
-    e.State AS state,
-    e.Country AS country,
-    e.PostalCode AS postal_code,
-    e.Email AS email
-FROM staging_dim_employee e
-LEFT JOIN staging_dim_employee s ON e.ReportsTo = s.EmployeeId;
-```
+   ```sql
+   CREATE OR REPLACE TABLE dim_employee AS
+   SELECT 
+       e.EmployeeId AS employee_id,
+       CONCAT(e.FirstName, ' ', e.LastName) AS full_name,
+       e.Title AS title,
+       CONCAT(s.FirstName, ' ', s.LastName) AS supervisor_name,
+       e.HireDate AS hire_date,
+       e.Address AS address,
+       e.City AS city,
+       e.State AS state,
+       e.Country AS country,
+       e.PostalCode AS postal_code,
+       e.Email AS email
+   FROM staging_dim_employee e
+   LEFT JOIN staging_dim_employee s ON e.ReportsTo = s.EmployeeId;
+   ```
    - Účel: Poskytuje informácie o štruktúre tímu a kontaktné údaje zamestnancov.
 
 4. **dim_playlist**
@@ -138,13 +138,13 @@ LEFT JOIN staging_dim_employee s ON e.ReportsTo = s.EmployeeId;
      - Kopíruje údaje zo stagingovej tabuľky `staging_dim_playlist`.
      - Odstraňuje duplicitné a nadbytočné informácie.
    - SQL kód:
-```sql
-CREATE OR REPLACE TABLE dim_playlist AS
-SELECT 
-    PlaylistId AS playlist_id,
-    Name AS name
-FROM staging_dim_playlist;
-```
+   ```sql
+   CREATE OR REPLACE TABLE dim_playlist AS
+   SELECT 
+       PlaylistId AS playlist_id,
+       Name AS name
+   FROM staging_dim_playlist;
+   ```
    - Účel: Umožňuje analyzovať používateľské playlisty.
 
 5. **dim_date**
@@ -153,46 +153,54 @@ FROM staging_dim_playlist;
      - Vytvára jedinečné dátumy zo `InvoiceDate` v tabuľke `staging_fact_invoice`.
      - Extrahuje časové komponenty ako deň, mesiac, rok a štvrťrok.
    - SQL kód:
-```sql
-CREATE OR REPLACE TABLE dim_date AS
-SELECT DISTINCT 
-    CAST(InvoiceDate AS DATE) AS date,
-    EXTRACT(DAY FROM InvoiceDate) AS day,
-    EXTRACT(MONTH FROM InvoiceDate) AS month,
-    EXTRACT(YEAR FROM InvoiceDate) AS year,
-    EXTRACT(QUARTER FROM InvoiceDate) AS quarter
-FROM staging_fact_invoice;
-```
+   ```sql
+   CREATE OR REPLACE TABLE dim_date AS
+   SELECT DISTINCT 
+       CAST(InvoiceDate AS DATE) AS date,
+       EXTRACT(DAY FROM InvoiceDate) AS day,
+       EXTRACT(MONTH FROM InvoiceDate) AS month,
+       EXTRACT(YEAR FROM InvoiceDate) AS year,
+       EXTRACT(QUARTER FROM InvoiceDate) AS quarter
+   FROM staging_fact_invoice;
+   ```
    - Účel: Podporuje analýzu podľa času, napr. mesačné alebo ročné trendy.
 
-#### Faktová tabuľka
-
-1. **fact_invoice**
-   - Transformácia:
-     - Spája údaje zo stagingových tabuliek `staging_fact_invoice` a `staging_fact_invoiceline`.
-     - Pridáva informácie z dimenzionálnych tabuliek `dim_date`, `dim_employee` a `dim_playlist`.
-     - Obsahuje podrobnosti o predaji, ako je jednotková cena, množstvo a celková suma.
+6. **fact_invoice**
+   - Tabuľka `fact_invoice` spája údaje zo stagingových tabuliek `staging_fact_invoice` a `staging_fact_invoiceline` a dopĺňa ich informáciami z dimenzionálnych tabuliek `dim_date`, `dim_employee` a `dim_playlist`. Obsahuje podrobnosti o predaji vrátane jednotkovej ceny, množstva a celkovej sumy faktúry.
+   - Tabuľka `fact_invoice` je centrálnou tabuľkou pre analýzu predajov a fakturácie. Umožňuje pokročilé analýzy výkonnosti produktov, zákazníkov, zamestnancov a časových trendov.
+   - Primárne kľúče
+      -  **fact_id**: Unikátny identifikátor faktúry. Používa sa na rozlíšenie každej faktúry.
+      -  **vdate_id**: Dátum transakcie (odkazuje na `dim_date`). Umožňuje analýzu na základe času, napríklad denné, týždenné alebo ročné trendy.
+      -  **customer_id**: Identifikátor zákazníka (odkazuje na `dim_customer`). Podporuje analýzu zákazníkov vrátane demografie a predaja podľa regiónov.
+      -  **employee_id**: Identifikátor zamestnanca (odkazuje na `dim_employee`). Pomáha hodnotiť výkon zamestnancov na základe generovaných tržieb.
+      -  **track_id**: Identifikátor skladby (odkazuje na `dim_track`). Podporuje analýzu predaja konkrétnych skladieb alebo žánrov.
+      -  **playlist_id**: Identifikátor playlistu (odkazuje na `dim_playlist`). Identifikuje trendy alebo populárne skladby v playlistoch.
+   - Metriky
+      -  **unit_price**: Jednotková cena skladby alebo produktu. Používa sa na výpočet tržieb alebo priemernej ceny.
+      -  **quantity**: Počet predaných položiek. Pomáha sledovať objemy predaja.
+      -  **line_total**: Predpočítaný súčet pre riadok faktúry (`unit_price * quantity`). Používa sa na výpočet tržieb na úrovni skladieb.
+      -  **invoice_total**: Celková suma faktúry. Používa sa na analýzu tržieb na faktúru alebo zákazníka.
    - SQL kód:
-```sql
-CREATE OR REPLACE TABLE fact_invoice AS
-SELECT 
-    i.InvoiceId AS fact_id,
-    i.CustomerId AS customer_id,
-    e.employee_id AS employee_id,
-    d.date AS date_id,
-    il.TrackId AS track_id,
-    pt.PlaylistId AS playlist_id,
-    il.UnitPrice AS unit_price,
-    il.Quantity AS quantity,
-    i.Total AS total
-FROM staging_fact_invoice i
-LEFT JOIN staging_fact_invoiceline il ON i.InvoiceId = il.InvoiceId
-LEFT JOIN dim_date d ON CAST(i.InvoiceDate AS DATE) = d.date
-LEFT JOIN dim_employee e ON e.employee_id = i.CustomerId
-LEFT JOIN staging_dim_playlisttrack pt ON il.TrackId = pt.TrackId;
-```
-   - Účel: Táto tabuľka je centrálnou tabuľkou pre analýzu predajov a fakturácie.
-
+   ```sql
+   CREATE OR REPLACE TABLE fact_invoice AS
+   SELECT
+       i.InvoiceId AS fact_id,
+       i.CustomerId AS customer_id,
+       e.employee_id AS employee_id,
+       d.date AS date_id,
+       il.TrackId AS track_id,
+       pt.PlaylistId AS playlist_id,
+       il.UnitPrice AS unit_price,
+       il.Quantity AS quantity,
+       il.UnitPrice * il.Quantity AS line_total,
+       i.Total AS invoice_total
+   FROM staging_fact_invoice i
+   LEFT JOIN staging_fact_invoiceline il ON i.InvoiceId = il.InvoiceId
+   LEFT JOIN dim_date d ON CAST(i.InvoiceDate AS DATE) = d.date
+   LEFT JOIN dim_employee e ON e.employee_id = i.CustomerId
+   LEFT JOIN staging_dim_playlisttrack pt ON il.TrackId = pt.TrackId;
+   ```
+   
 ### Vizualizácie
 Projekt zahŕňa vizualizácie vytvorené na základe dimenzionálnych a faktových tabuliek.
 
@@ -203,7 +211,7 @@ Projekt zahŕňa vizualizácie vytvorené na základe dimenzionálnych a faktov�
 ```sql
 SELECT 
     t.name AS track_name,
-    SUM(f.unit_price * f.quantity) AS total_revenue
+    SUM(f.line_total) AS total_revenue
 FROM fact_invoice f
 JOIN dim_track t ON f.track_id = t.track_id
 GROUP BY t.name
@@ -211,7 +219,7 @@ ORDER BY total_revenue DESC
 LIMIT 10;
 ```
    - **Výstup:** Stĺpcový graf, kde osi reprezentujú skladby a ich celkové tržby.
-   = <img src="https://github.com/user-attachments/assets/e63403c7-f299-4fdb-98d9-35bebac73884" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+   - <img src="https://github.com/user-attachments/assets/17de46ee-13e7-431d-a341-244e3411330c" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 2. **Transactions count by days of the week**
    - **Popis:** Počet transakcií podľa jednotlivých dní v týždni.
@@ -235,7 +243,7 @@ GROUP BY d.day
 ORDER BY d.day;
 ```
    - **Výstup:** Stĺpcový graf reprezentujúci počet transakcií v jednotlivé dni týždňa.
-   = <img src="https://github.com/user-attachments/assets/4b1879ea-3221-4092-88c5-fb447edce698" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+   = <img src="https://github.com/user-attachments/assets/05802ee0-c038-4afd-9c84-00807af92d1b" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 3. **Best employees by revenue generated**
    - **Popis:** Zobrazuje zamestnancov zoradených podľa tržieb, ktoré generovali.
@@ -244,14 +252,14 @@ ORDER BY d.day;
 ```sql
 SELECT 
     e.full_name AS employee_name,
-    SUM(f.unit_price * f.quantity) AS total_revenue
+    SUM(f.line_total) AS total_revenue
 FROM fact_invoice f
 JOIN dim_employee e ON f.employee_id = e.employee_id
 GROUP BY e.full_name
 ORDER BY total_revenue DESC;
 ```
    - **Výstup:** Horizontálny stĺpcový graf ukazujúci zamestnancov a ich príspevok na tržby.
-   = <img src="https://github.com/user-attachments/assets/8f54999e-3031-4b95-b865-3e8f421a54a5" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+   = <img src="https://github.com/user-attachments/assets/37c4c59e-6b48-49a9-a0ec-dda3840e6026" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 4. **Artists by generated revenue**
    - **Popis:** Zobrazuje top 10 interpretov na základe ich tržieb.
@@ -260,7 +268,7 @@ ORDER BY total_revenue DESC;
 ```sql
 SELECT 
     t.artist_name AS artist,
-    SUM(f.unit_price * f.quantity) AS total_revenue
+    SUM(f.line_total) AS total_revenue
 FROM fact_invoice f
 JOIN dim_track t ON f.track_id = t.track_id
 GROUP BY t.artist_name
@@ -268,7 +276,7 @@ ORDER BY total_revenue DESC
 LIMIT 10;
 ```
    - **Výstup:** Stĺpcový graf zoradený podľa interpretov a ich tržieb.
-   = <img src="https://github.com/user-attachments/assets/49a8e528-63ab-4c26-9349-f175fba1d652" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+   = <img src="https://github.com/user-attachments/assets/9db3f58d-1530-4e5d-b0a7-8bd17dfbf19c" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 5. **Countries by generated revenue**
    - **Popis:** Zobrazuje top 10 krajín podľa generovaných tržieb.
@@ -278,7 +286,7 @@ LIMIT 10;
 SELECT 
     c.country,
     COUNT(f.fact_id) AS total_transactions,
-    SUM(f.unit_price * f.quantity) AS total_revenue
+    SUM(f.line_total) AS total_revenue
 FROM fact_invoice f
 JOIN dim_customer c ON f.customer_id = c.customer_id
 GROUP BY c.country
@@ -286,7 +294,8 @@ ORDER BY total_revenue DESC
 LIMIT 10;
 ```
    - **Výstup:** Horizontálny stĺpcový graf reprezentujúci krajiny a ich podiel na tržbách.
-   = <img src="https://github.com/user-attachments/assets/b59a4097-d1ae-492e-874c-41c6909fe65f" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
+   = <img src="https://github.com/user-attachments/assets/31cc7b11-1c7b-4db1-b32a-73ece2081b06" alt="Chinook_ERD_star_scheme" style="max-width:100%; height:auto;">
 
 
-### Autor: Martin Studený
+
+## Autor: Martin Studený
