@@ -170,7 +170,7 @@ FROM staging_dim_customer;
    - Tabuľka `fact_invoice` je centrálnou tabuľkou pre analýzu predajov a fakturácie. Umožňuje pokročilé analýzy výkonnosti produktov, zákazníkov, zamestnancov a časových trendov.
    - Primárne kľúče
       -  **fact_id**: Unikátny identifikátor faktúry. Používa sa na rozlíšenie každej faktúry.
-      -  **vdate_id**: Dátum transakcie (odkazuje na `dim_date`). Umožňuje analýzu na základe času, napríklad denné, týždenné alebo ročné trendy.
+      -  **date_id**: Dátum transakcie (odkazuje na `dim_date`). Umožňuje analýzu na základe času, napríklad denné, týždenné alebo ročné trendy.
       -  **customer_id**: Identifikátor zákazníka (odkazuje na `dim_customer`). Podporuje analýzu zákazníkov vrátane demografie a predaja podľa regiónov.
       -  **employee_id**: Identifikátor zamestnanca (odkazuje na `dim_employee`). Pomáha hodnotiť výkon zamestnancov na základe generovaných tržieb.
       -  **track_id**: Identifikátor skladby (odkazuje na `dim_track`). Podporuje analýzu predaja konkrétnych skladieb alebo žánrov.
